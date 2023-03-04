@@ -1,0 +1,158 @@
+Sub TickerLooping()
+      
+           
+      Dim x As Integer
+      Dim TickCount As Long
+      Dim numrows As Long
+      Dim NumRowsCount As Long
+      Dim Yr As String
+      
+            
+      TickCount = 1
+      
+                  
+      Dim ws As Worksheet
+      
+      
+      ' Loop through each of the worksheets
+      For Each ws In Worksheets
+      
+        ws.Activate
+        
+        Yr = ws.Name
+        
+              
+        ' Set numrows = number of rows of data.
+        numrows = Range("A2", Range("A2").End(xlDown)).Rows.Count
+        
+              
+        Range("I1").Value = "Ticker"
+        Range("J1").Value = "Yearly Change"
+      
+        Range("K1").Value = "Percent Change"
+      
+            
+        Range("L1").Value = "Total Stock Volume"
+        Columns("J:L").AutoFit
+      
+        Range("K2").Select
+        ActiveCell.EntireColumn.Select
+        Selection.NumberFormat = "0.00%"
+           
+              
+        Range("A2").Select
+        
+        
+        ' "For" loop to loop "numrows" number of times
+        For NumRowsCount = 2 To numrows + 1
+      
+                                           
+            If (Range("B" & NumRowsCount).Value = (Yr & "0102")) Then
+                
+                ' This is the beginning of the year
+                TickCount = TickCount + 1
+                Volume = Range("G" & NumRowsCount).Value
+                BeginVal = Range("C" & NumRowsCount).Value
+            
+            
+            ElseIf Range("B" & NumRowsCount).Value = (Yr & "1231") Then
+                
+                ' This is the end of the year
+                Range("I" & TickCount).Value = Range("A" & NumRowsCount).Value
+                Volume = Volume + Range("G" & NumRowsCount).Value
+                Range("L" & TickCount).Value = Volume
+            
+                EndVal = Range("f" & NumRowsCount).Value
+                YearlyChange = EndVal - BeginVal
+                
+                If (YearlyChange < 0) Then
+                    Range("J" & TickCount).Interior.ColorIndex = 3
+                Else
+                    Range("J" & TickCount).Interior.ColorIndex = 4
+                End If
+                
+                Range("J" & TickCount).Value = YearlyChange
+                Range("K" & TickCount).Value = YearlyChange / BeginVal
+                If ((YearlyChange / BeginVal) < 0) Then
+                    Range("K" & TickCount).Interior.ColorIndex = 3
+                Else
+                    Range("K" & TickCount).Interior.ColorIndex = 4
+                End If
+                    
+            Else
+         
+                Volume = Volume + Range("G" & NumRowsCount).Value
+         
+            End If
+         
+         
+            ' Selects cell down 1 row from active cell.
+            ActiveCell.Offset(1, 0).Select
+           
+        Next
+        
+        ' Displays Greatest % increase , % decrease , total volume
+        numrows = Range("I2", Range("I2").End(xlDown)).Rows.Count
+        
+        Range("O2").Value = "Greatest % Increase"
+        Range("O3").Value = "Greatest % Decrease"
+        Range("O4").Value = "Greatest Total Volume"
+        Columns("O:O").AutoFit
+      
+        
+        Range("Q2").Select
+        Selection.NumberFormat = "0.00%"
+        
+        Range("Q3").Select
+        Selection.NumberFormat = "0.00%"
+        
+        
+        Range("P1").Value = "Ticker"
+        Range("Q1").Value = "Value"
+      
+            
+        strnum = "K2:K" & Trim(Str(numrows + 1))
+        Range("Q2").Value = WorksheetFunction.Max(Range(strnum))
+        Range("Q3").Value = WorksheetFunction.Min(Range(strnum))
+        
+        strnum = "L2:L" & Trim(Str(numrows + 1))
+        Range("Q4").Value = WorksheetFunction.Max(Range(strnum))
+        
+        Columns("Q:Q").AutoFit
+            
+            
+        
+        For x = 2 To numrows + 1
+            
+            trimx = Trim(Str(x))
+            If (Range("Q2").Value = Range("K" & trimx).Value) Then
+                Range("P2").Value = Range("I" & trimx).Value
+                
+            ElseIf (Range("Q3").Value = Range("K" & trimx).Value) Then
+                Range("P3").Value = Range("I" & trimx).Value
+            
+            End If
+            
+        Next x
+            
+            
+        For x = 2 To numrows + 1
+            
+            trimx = Trim(Str(x))
+            If (Range("Q4").Value = Range("L" & trimx).Value) Then
+                Range("P4").Value = Range("I" & trimx).Value
+               
+            End If
+            
+        Next x
+            
+        ' reset cursor to A1 of sheet
+        Range("A1").Select
+        
+        ' reset ticker count
+        TickCount = 1
+      Next ws
+      
+      'select 1st worksheet
+      Sheets(1).Activate
+End Sub
